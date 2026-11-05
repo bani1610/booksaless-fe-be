@@ -103,6 +103,13 @@ class GenreController extends Controller
             ], 404);
         }
 
+        if ($genre->books()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Genre masih dipakai oleh buku, pindahkan atau hapus bukunya terlebih dahulu.',
+            ], 409);
+        }
+
         $genre->delete();
 
         return response()->json([

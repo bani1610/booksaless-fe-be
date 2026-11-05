@@ -116,6 +116,13 @@ class AuthorController extends Controller
             ], 404);
         }
 
+        if ($author->books()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Author masih dipakai oleh buku, pindahkan atau hapus bukunya terlebih dahulu.',
+            ], 409);
+        }
+
         $author->delete();
 
         return response()->json([
