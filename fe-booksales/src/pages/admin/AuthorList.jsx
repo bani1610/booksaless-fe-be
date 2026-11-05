@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Alert from '../../components/Alert.jsx'
+import ConfirmDialog from '../../components/ConfirmDialog.jsx'
 import { api } from '../../lib/api.js'
 
 function AuthorList() {
@@ -10,6 +11,10 @@ function AuthorList() {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(location.state?.success ?? '')
+  const [target, setTarget] = useState(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   useEffect(() => {
     api
@@ -28,6 +33,28 @@ function AuthorList() {
     setQuery(search.trim())
   }
 
+  function openDelete(author) {
+    setDeleteError('')
+    setTarget(author)
+  }
+
+  async function handleDelete() {
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      await api.deleteAuthor(target.id)
+      setAuthors((list) => list.filter((a) => a.id !== target.id))
+      setSuccess(`Author "${target.name}" berhasil dihapus.`)
+      setTarget(null)
+    } catch (err) {
+      setDeleteError(err.message)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const bookCount = target?.books?.length ?? 0
+
   return (
     <>
       <header className="page-header">
@@ -40,7 +67,7 @@ function AuthorList() {
         </Link>
       </header>
 
-      <Alert type="success">{location.state?.success}</Alert>
+      <Alert type="success">{success}</Alert>
       <Alert>{error}</Alert>
 
       <form className="search" onSubmit={handleSearch} role="search">
@@ -69,10 +96,46 @@ function AuthorList() {
               <h2>{author.name}</h2>
               <p className="muted author-bio">{author.bio}</p>
               <span className="badge">{author.books?.length ?? 0} buku</span>
+              <div className="row-actions card-actions">
+                <Link
+                  to={`/admin/authors/${author.id}/edit`}
+                  className="btn btn-ghost btn-sm"
+                  aria-label={`Ubah author ${author.name}`}
+                >
+                  Ubah
+                </Link>
+                <button
+                  type="button"
+                  className="btn btn-danger-ghost btn-sm"
+                  onClick={() => openDelete(author)}
+                  aria-label={`Hapus author ${author.name}`}
+                >
+                  Hapus
+                </button>
+              </div>
             </div>
           </article>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={Boolean(target)}
+        title="Hapus author?"
+        confirmLabel="Ya, hapus author"
+        busy={deleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+        onCancel={() => setTarget(null)}
+      >
+        <p>
+          Author <strong>{target?.name}</strong> akan dihapus permanen dari database.
+        </p>
+        {bookCount > 0 && (
+          <p className="muted">
+            Author ini masih memiliki {bookCount} buku, sehingga API akan menolak penghapusan.
+          </p>
+        )}
+      </ConfirmDialog>
     </>
   )
 }

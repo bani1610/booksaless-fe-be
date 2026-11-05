@@ -46,9 +46,15 @@ export const api = {
   logout: () => request('/logout', { method: 'POST' }),
 
   getGenres: () => request('/genres'),
+  getGenre: (id) => request(`/genres/${id}`),
   createGenre: (payload) => request('/genres', { method: 'POST', body: payload }),
+  updateGenre: (id, payload) => request(`/genres/${id}`, { method: 'PUT', body: payload }),
+  deleteGenre: (id) => request(`/genres/${id}`, { method: 'DELETE' }),
 
   getAuthors: (search = '') =>
     request(`/authors${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+  getAuthor: (id) => request(`/authors/${id}`),
   createAuthor: (payload) => request('/authors', { method: 'POST', body: payload }),
+  updateAuthor: (id, payload) => request(`/authors/${id}`, { method: 'PUT', body: payload }),
+  deleteAuthor: (id) => request(`/authors/${id}`, { method: 'DELETE' }),
 }

@@ -4,9 +4,9 @@ import RequireAdmin from './components/RequireAdmin.jsx'
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/admin/Dashboard.jsx'
 import GenreList from './pages/admin/GenreList.jsx'
-import GenreCreate from './pages/admin/GenreCreate.jsx'
+import GenreForm from './pages/admin/GenreForm.jsx'
 import AuthorList from './pages/admin/AuthorList.jsx'
-import AuthorCreate from './pages/admin/AuthorCreate.jsx'
+import AuthorForm from './pages/admin/AuthorForm.jsx'
 
 function App() {
   return (
@@ -22,9 +22,11 @@ function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="genres" element={<GenreList />} />
-        <Route path="genres/create" element={<GenreCreate />} />
+        <Route path="genres/create" element={<GenreForm />} />
+        <Route path="genres/:id/edit" element={<GenreForm />} />
         <Route path="authors" element={<AuthorList />} />
-        <Route path="authors/create" element={<AuthorCreate />} />
+        <Route path="authors/create" element={<AuthorForm />} />
+        <Route path="authors/:id/edit" element={<AuthorForm />} />
       </Route>
       <Route path="*" element={<Navigate to="/admin" replace />} />
     </Routes>
