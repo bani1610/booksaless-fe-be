@@ -2,10 +2,9 @@ import { Navigate } from 'react-router-dom'
 import { getToken, getUser } from '../lib/api.js'
 
 function RequireAdmin({ children }) {
-  const user = getUser()
-  if (!getToken() || !user?.is_admin) {
-    return <Navigate to="/login" replace />
-  }
+  if (!getToken()) return <Navigate to="/login" replace />
+  // Customer yang sudah login diarahkan ke halaman akunnya, bukan ke login lagi
+  if (!getUser()?.is_admin) return <Navigate to="/akun" replace />
   return children
 }
 

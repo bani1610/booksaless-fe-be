@@ -17,7 +17,8 @@
                             "script": {
                                 "type": "text/javascript",
                                 "exec": [
-                                    "pm.collectionVariables.set('register_email', 'postman' + Date.now() + '@booksales.com');"
+                                    "pm.collectionVariables.set('register_email', 'postman' + Date.now() + '@booksales.com');",
+                                    "pm.collectionVariables.set('register_username', 'postman_' + Date.now());"
                                 ]
                             }
                         },
@@ -54,7 +55,7 @@
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Postman User\",\n    \"email\": \"{{register_email}}\",\n    \"password\": \"password123\"\n}"
+                            "raw": "{\n    \"name\": \"Postman User\",\n    \"username\": \"{{register_username}}\",\n    \"email\": \"{{register_email}}\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
                         },
                         "auth": {
                             "type": "noauth"
@@ -2567,6 +2568,10 @@
         },
         {
             "key": "register_email",
+            "value": ""
+        },
+        {
+            "key": "register_username",
             "value": ""
         },
         {

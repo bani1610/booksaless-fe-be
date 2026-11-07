@@ -12,6 +12,7 @@ class UserSeeder extends Seeder
     {
         User::create([
             'name' => 'Admin Booksales',
+            'username' => 'admin',
             'email' => 'admin@booksales.com',
             'password' => Hash::make('password123'),
             'is_admin' => true,
@@ -19,6 +20,7 @@ class UserSeeder extends Seeder
 
         User::create([
             'name' => 'Customer Booksales',
+            'username' => 'customer',
             'email' => 'customer@booksales.com',
             'password' => Hash::make('password123'),
         ]);
