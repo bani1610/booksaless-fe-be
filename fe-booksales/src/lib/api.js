@@ -42,8 +42,11 @@ async function request(path, { method = 'GET', body } = {}) {
 }
 
 export const api = {
+  register: (payload) => request('/register', { method: 'POST', body: payload }),
   login: (credentials) => request('/login', { method: 'POST', body: credentials }),
   logout: () => request('/logout', { method: 'POST' }),
+
+  getBooks: () => request('/books'),
 
   getGenres: () => request('/genres'),
   getGenre: (id) => request(`/genres/${id}`),
