@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import Alert from '../components/Alert.jsx'
-import { api, saveSession } from '../lib/api.js'
+import { useAuth } from '../auth/useAuth.js'
 
 function Login() {
-  const navigate = useNavigate()
   const location = useLocation()
+  const { login } = useAuth()
+  // Diisi oleh ProtectedRoute saat tamu mencoba membuka halaman terlindungi
+  const redirectTo = location.state?.from
   // Email terisi otomatis jika datang dari halaman registrasi
   const [form, setForm] = useState({ email: location.state?.email ?? '', password: '' })
   const [error, setError] = useState('')
@@ -16,10 +18,10 @@ function Login() {
     setError('')
     setLoading(true)
     try {
-      const res = await api.login(form)
-      saveSession(res.token, res.user)
-      // Admin ke dashboard, customer (termasuk hasil registrasi) ke halaman akun
-      navigate(res.user?.is_admin ? '/admin' : '/akun', { replace: true })
+      // Setelah sesi tersimpan, GuestRoute mengarahkan pengguna: ke halaman yang tadi
+      // diminta, atau ke halaman awal sesuai peran (admin -> /admin, user -> /akun).
+      // Jika perannya tidak cocok, ProtectedRoute yang akan mengarahkan ke /403.
+      await login(form)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -36,6 +38,9 @@ function Login() {
         </Link>
         <h1>Masuk</h1>
         <p className="muted">Masuk dengan email dan password akun Anda.</p>
+        {redirectTo && !error && (
+          <Alert type="info">Silakan masuk terlebih dahulu untuk membuka halaman tersebut.</Alert>
+        )}
         <Alert>{error}</Alert>
         <label className="field">
           <span>Email</span>

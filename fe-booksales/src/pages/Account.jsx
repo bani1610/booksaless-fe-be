@@ -1,17 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { api, clearSession, getUser } from '../lib/api.js'
+import { useAuth } from '../auth/useAuth.js'
 
+// Halaman profil: bisa dibuka oleh semua pengguna yang login (user maupun admin)
 function Account() {
   const navigate = useNavigate()
-  const user = getUser()
+  const { user, role, isAdmin, logout } = useAuth()
 
   async function handleLogout() {
-    try {
-      await api.logout()
-    } catch {
-      // Token mungkin sudah kedaluwarsa; sesi lokal tetap dihapus
-    }
-    clearSession()
+    await logout()
     navigate('/', { replace: true })
   }
 
@@ -24,7 +20,7 @@ function Account() {
         </Link>
         <div>
           <h1>Halo, {user?.name}</h1>
-          <p className="muted">Anda masuk sebagai customer.</p>
+          <p className="muted">Ini halaman profil akun Anda.</p>
         </div>
         <dl className="account-info">
           <div>
@@ -35,8 +31,19 @@ function Account() {
             <dt>Email</dt>
             <dd>{user?.email}</dd>
           </div>
+          <div>
+            <dt>Peran</dt>
+            <dd>
+              <span className={`role-badge role-${role}`}>{isAdmin ? 'Admin' : 'User'}</span>
+            </dd>
+          </div>
         </dl>
-        <Link to="/" className="btn btn-primary btn-block">
+        {isAdmin && (
+          <Link to="/admin" className="btn btn-primary btn-block">
+            Buka dashboard admin
+          </Link>
+        )}
+        <Link to="/" className={`btn btn-block ${isAdmin ? 'btn-ghost' : 'btn-primary'}`}>
           Lihat katalog buku
         </Link>
         <button type="button" className="btn btn-ghost btn-block" onClick={handleLogout}>

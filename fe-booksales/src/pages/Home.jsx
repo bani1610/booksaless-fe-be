@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import Alert from '../components/Alert.jsx'
 import BookCard from '../components/store/BookCard.jsx'
 import SiteHeader from '../components/store/SiteHeader.jsx'
-import { api, getToken } from '../lib/api.js'
+import { useAuth } from '../auth/useAuth.js'
+import { api } from '../lib/api.js'
 
 function Home() {
+  const { isAuthenticated } = useAuth()
   const [books, setBooks] = useState([])
   const [genres, setGenres] = useState([])
   const [loading, setLoading] = useState(true)
@@ -60,7 +62,7 @@ function Home() {
                 <a href="#katalog" className="btn btn-primary">
                   Lihat katalog
                 </a>
-                {!getToken() && (
+                {!isAuthenticated && (
                   <Link to="/register" className="btn btn-ghost">
                     Buat akun gratis
                   </Link>

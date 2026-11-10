@@ -21,6 +21,7 @@ Route::apiResources([
 
 Route::middleware('auth:api')->group(function () {
 	Route::post('/logout', [AuthController::class, 'logout']);
+	Route::get('/me', [AuthController::class, 'me']);
 
 	// Customer (authenticated): create, update, show
 	Route::middleware('customer')->group(function () {

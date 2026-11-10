@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
-import { getToken, getUser } from '../../lib/api.js'
+import { homePathFor } from '../../auth/authService.js'
+import { useAuth } from '../../auth/useAuth.js'
 
 function SiteHeader() {
-  const user = getToken() ? getUser() : null
+  const { user, isAdmin } = useAuth()
 
   return (
     <header className="site-header">
@@ -16,8 +17,9 @@ function SiteHeader() {
             Katalog
           </a>
           {user ? (
-            <Link to={user.is_admin ? '/admin' : '/akun'} className="btn btn-primary btn-sm">
-              {user.is_admin ? 'Dashboard' : 'Akun saya'}
+            // Tombol menyesuaikan peran: admin ke dashboard, user ke halaman akun
+            <Link to={homePathFor(user)} className="btn btn-primary btn-sm">
+              {isAdmin ? 'Dashboard' : 'Akun saya'}
             </Link>
           ) : (
             <>
