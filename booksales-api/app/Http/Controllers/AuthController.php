@@ -52,6 +52,16 @@ class AuthController extends Controller
         ], 200);
     }
 
+    // Data user dari token, dipakai frontend untuk memastikan peran (is_admin)
+    public function me()
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Get current user success',
+            'data' => auth('api')->user(),
+        ], 200);
+    }
+
     public function logout()
     {
         auth('api')->logout();

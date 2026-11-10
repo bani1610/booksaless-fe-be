@@ -1,17 +1,12 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { api, clearSession, getUser } from '../lib/api.js'
+import { useAuth } from '../auth/useAuth.js'
 
 function AdminLayout() {
   const navigate = useNavigate()
-  const user = getUser()
+  const { user, logout } = useAuth()
 
   async function handleLogout() {
-    try {
-      await api.logout()
-    } catch {
-      // Token mungkin sudah kedaluwarsa; sesi lokal tetap dihapus
-    }
-    clearSession()
+    await logout()
     navigate('/login', { replace: true })
   }
 
@@ -27,8 +22,11 @@ function AdminLayout() {
           <p className="nav-label">Master data</p>
           <NavLink to="/admin/genres">Genre</NavLink>
           <NavLink to="/admin/authors">Author</NavLink>
+          <p className="nav-label">Toko</p>
+          <NavLink to="/">Lihat beranda</NavLink>
         </nav>
         <div className="sidebar-footer">
+          <span className="role-badge role-admin">Admin</span>
           <p className="user-name">{user?.name}</p>
           <p className="user-email">{user?.email}</p>
           <button type="button" className="btn btn-ghost" onClick={handleLogout}>
