@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 // DatabaseTransactions (bukan RefreshDatabase) agar data di database pengembangan tidak terhapus
 class CheckoutTest extends TestCase
@@ -42,7 +43,7 @@ class CheckoutTest extends TestCase
             'name' => 'Customer Uji', 'email' => 'uji-' . uniqid() . '@example.com',
             'password' => Str::random(16), 'is_admin' => false,
         ]);
-        $this->token = auth('api')->login($customer);
+        $this->token = JWTAuth::fromUser($customer);
     }
 
     /** $payment: null = belum dibayar, 'good' = lunas dengan signature benar, 'bad' = signature salah */
