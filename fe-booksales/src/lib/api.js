@@ -35,6 +35,20 @@ http.interceptors.response.use(
   },
 )
 
+// Payload berisi File dikirim sebagai multipart. PHP tidak membaca multipart pada PUT,
+// jadi ubah data dikirim sebagai POST + _method=PUT (method spoofing Laravel).
+function save(url, payload, isUpdate) {
+  const hasFile = Object.values(payload).some((v) => v instanceof File)
+  if (!hasFile) return isUpdate ? http.put(url, payload) : http.post(url, payload)
+
+  const body = new FormData()
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== null && value !== undefined) body.append(key, value)
+  })
+  if (isUpdate) body.append('_method', 'PUT')
+  return http.post(url, body)
+}
+
 export const api = {
   register: (payload) => http.post('/register', payload),
   login: (credentials) => http.post('/login', credentials),
@@ -42,6 +56,21 @@ export const api = {
   me: () => http.get('/me'),
 
   getBooks: () => http.get('/books'),
+  getBook: (id) => http.get(`/books/${id}`),
+  createBook: (payload) => save('/books', payload, false),
+  updateBook: (id, payload) => save(`/books/${id}`, payload, true),
+  deleteBook: (id) => http.delete(`/books/${id}`),
+
+  // Customer
+  createTransaction: (payload) => http.post('/transactions', payload),
+  getMyTransactions: () => http.get('/my-transactions'),
+  checkout: (items) => http.post('/checkout', { items }),
+  checkoutStatus: (orderId) => http.get(`/checkout/${orderId}/status`),
+  cancelCheckout: (orderId) => http.post('/checkout/cancel', { order_id: orderId }),
+
+  // Admin
+  getTransactions: () => http.get('/transactions'),
+  deleteTransaction: (id) => http.delete(`/transactions/${id}`),
 
   getGenres: () => http.get('/genres'),
   getGenre: (id) => http.get(`/genres/${id}`),
@@ -51,7 +80,13 @@ export const api = {
 
   getAuthors: (search = '') => http.get('/authors', { params: search ? { search } : {} }),
   getAuthor: (id) => http.get(`/authors/${id}`),
-  createAuthor: (payload) => http.post('/authors', payload),
-  updateAuthor: (id, payload) => http.put(`/authors/${id}`, payload),
+  createAuthor: (payload) => save('/authors', payload, false),
+  updateAuthor: (id, payload) => save(`/authors/${id}`, payload, true),
   deleteAuthor: (id) => http.delete(`/authors/${id}`),
+
+  getUsers: () => http.get('/users'),
+  getUser: (id) => http.get(`/users/${id}`),
+  createUser: (payload) => http.post('/users', payload),
+  updateUser: (id, payload) => http.put(`/users/${id}`, payload),
+  deleteUser: (id) => http.delete(`/users/${id}`),
 }

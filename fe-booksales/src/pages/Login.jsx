@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Alert from '../components/Alert.jsx'
 import { useAuth } from '../auth/useAuth.js'
+import { useToast } from '../toast/useToast.js'
 
 function Login() {
   const location = useLocation()
   const { login } = useAuth()
+  const toast = useToast()
   // Diisi oleh ProtectedRoute saat tamu mencoba membuka halaman terlindungi
   const redirectTo = location.state?.from
   // Email terisi otomatis jika datang dari halaman registrasi
@@ -19,9 +21,12 @@ function Login() {
     setLoading(true)
     try {
       // Setelah sesi tersimpan, GuestRoute mengarahkan pengguna: ke halaman yang tadi
-      // diminta, atau ke halaman awal sesuai peran (admin -> /admin, user -> /akun).
+      // diminta, atau ke halaman awal sesuai peran (admin -> /admin, user -> beranda /).
       // Jika perannya tidak cocok, ProtectedRoute yang akan mengarahkan ke /403.
-      await login(form)
+      const user = await login(form)
+      toast.success(`Selamat datang, ${user.name}`, {
+        message: user.is_admin ? 'Anda masuk sebagai admin.' : 'Selamat berbelanja buku.',
+      })
     } catch (err) {
       setError(err.message)
     } finally {

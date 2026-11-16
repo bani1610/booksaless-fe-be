@@ -20,9 +20,13 @@ function AdminLayout() {
         <nav>
           <NavLink to="/admin" end>Dashboard</NavLink>
           <p className="nav-label">Master data</p>
+          <NavLink to="/admin/books">Buku</NavLink>
           <NavLink to="/admin/genres">Genre</NavLink>
           <NavLink to="/admin/authors">Author</NavLink>
           <p className="nav-label">Toko</p>
+          <NavLink to="/admin/transactions">Transaksi</NavLink>
+          <p className="nav-label">Pengguna</p>
+          <NavLink to="/admin/users">Akun</NavLink>
           <NavLink to="/">Lihat beranda</NavLink>
         </nav>
         <div className="sidebar-footer">

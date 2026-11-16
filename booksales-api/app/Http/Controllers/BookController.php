@@ -31,12 +31,13 @@ class BookController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'cover_photo' => 'nullable|string',
+            'cover_photo' => 'nullable|string|max:255',
+            'cover_photo_file' => self::PHOTO_RULE,
             'genre_id' => 'required|exists:genres,id',
             'author_id' => 'required|exists:authors,id',
         ]);
 
-        $book = Book::create($validated);
+        $book = Book::create($this->withUploadedPhoto($request, $validated, 'cover_photo', 'covers'));
         $book->load(['genre', 'author']);
 
         return response()->json([
@@ -86,12 +87,13 @@ class BookController extends Controller
             'description' => 'nullable|string',
             'price' => 'sometimes|required|numeric|min:0',
             'stock' => 'sometimes|required|integer|min:0',
-            'cover_photo' => 'nullable|string',
+            'cover_photo' => 'nullable|string|max:255',
+            'cover_photo_file' => self::PHOTO_RULE,
             'genre_id' => 'sometimes|required|exists:genres,id',
             'author_id' => 'sometimes|required|exists:authors,id',
         ]);
 
-        $book->update($validated);
+        $book->update($this->withUploadedPhoto($request, $validated, 'cover_photo', 'covers'));
         $book->load(['genre', 'author']);
 
         return response()->json([
@@ -113,6 +115,14 @@ class BookController extends Controller
                 'success' => false,
                 'message' => 'Book Not Found',
             ], 404);
+        }
+
+        // FK transactions.book_id memakai cascade, jadi tanpa cek ini riwayat transaksi ikut terhapus
+        if ($book->transactions()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Buku sudah memiliki transaksi sehingga tidak dapat dihapus. Ubah stoknya menjadi 0 bila tidak dijual lagi.',
+            ], 409);
         }
 
         $book->delete();

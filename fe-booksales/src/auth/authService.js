@@ -12,7 +12,7 @@ export const ROLES = {
 // Halaman awal setiap peran setelah login
 const HOME_PATH = {
   [ROLES.ADMIN]: '/admin',
-  [ROLES.USER]: '/akun',
+  [ROLES.USER]: '/',
 }
 
 export function getToken() {

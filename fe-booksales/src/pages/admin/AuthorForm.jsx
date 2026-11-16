@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Alert from '../../components/Alert.jsx'
+import PhotoField from '../../components/form/PhotoField.jsx'
 import { api } from '../../lib/api.js'
 
 // Satu form untuk tambah (/admin/authors/create) dan ubah (/admin/authors/:id/edit)
@@ -9,6 +10,7 @@ function AuthorForm() {
   const isEdit = Boolean(id)
   const navigate = useNavigate()
   const [form, setForm] = useState({ name: '', photo: '', bio: '' })
+  const [photoFile, setPhotoFile] = useState(null)
   const [errors, setErrors] = useState({})
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
@@ -39,7 +41,8 @@ function AuthorForm() {
     setMessage('')
     setSaving(true)
     try {
-      const res = isEdit ? await api.updateAuthor(id, form) : await api.createAuthor(form)
+      const payload = { ...form, photo_file: photoFile }
+      const res = isEdit ? await api.updateAuthor(id, payload) : await api.createAuthor(payload)
       navigate('/admin/authors', {
         state: {
           success: isEdit
@@ -81,17 +84,15 @@ function AuthorForm() {
             />
             {errors.name && <small className="field-error">{errors.name[0]}</small>}
           </label>
-          <label className="field">
-            <span>Foto</span>
-            <input
-              type="text"
-              required
-              placeholder="URL foto, contoh: https://…/foto.jpg"
-              value={form.photo}
-              onChange={(e) => setForm({ ...form, photo: e.target.value })}
-            />
-            {errors.photo && <small className="field-error">{errors.photo[0]}</small>}
-          </label>
+          <PhotoField
+            label="Foto (opsional)"
+            shape="avatar"
+            url={form.photo}
+            file={photoFile}
+            onUrlChange={(photo) => setForm({ ...form, photo })}
+            onFileChange={setPhotoFile}
+            error={errors.photo_file?.[0] ?? errors.photo?.[0]}
+          />
           <label className="field">
             <span>Bio</span>
             <textarea
