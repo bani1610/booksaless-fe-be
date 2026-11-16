@@ -1,13 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth.js'
+import { useToast } from '../toast/useToast.js'
 
 // Halaman profil: bisa dibuka oleh semua pengguna yang login (user maupun admin)
 function Account() {
   const navigate = useNavigate()
   const { user, role, isAdmin, logout } = useAuth()
+  const toast = useToast()
 
   async function handleLogout() {
     await logout()
+    toast.info('Anda sudah keluar', { message: 'Sampai jumpa lagi.' })
     navigate('/', { replace: true })
   }
 
@@ -43,7 +46,12 @@ function Account() {
             Buka dashboard admin
           </Link>
         )}
-        <Link to="/" className={`btn btn-block ${isAdmin ? 'btn-ghost' : 'btn-primary'}`}>
+        {!isAdmin && (
+          <Link to="/pesanan" className="btn btn-primary btn-block">
+            Riwayat pesanan
+          </Link>
+        )}
+        <Link to="/" className="btn btn-block btn-ghost">
           Lihat katalog buku
         </Link>
         <button type="button" className="btn btn-ghost btn-block" onClick={handleLogout}>

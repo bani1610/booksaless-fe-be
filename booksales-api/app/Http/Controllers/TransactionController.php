@@ -15,11 +15,28 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        $transactions = Transaction::with(['customer', 'book.genre', 'book.author'])->get();
+        $transactions = Transaction::with(['customer', 'book.genre', 'book.author'])->latest()->get();
 
         return response()->json([
             'success' => true,
             'message' => 'List Data Transactions',
+            'data' => $transactions
+        ], 200);
+    }
+
+    /**
+     * Riwayat transaksi milik customer yang sedang login.
+     */
+    public function mine(Request $request)
+    {
+        $transactions = Transaction::with(['book.genre', 'book.author'])
+            ->where('customer_id', $request->user()->id)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'List My Transactions',
             'data' => $transactions
         ], 200);
     }
@@ -99,6 +116,15 @@ class TransactionController extends Controller
             ], 404);
         }
 
+        // Transaksi lunas/dibatalkan tidak boleh diubah: stoknya sudah final atau sudah dikembalikan.
+        // Yang terikat order Durianpay juga tidak, karena nominalnya harus sama dengan order tersebut.
+        if ($transaction->payment_status !== 'pending' || $transaction->payment_order_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hanya transaksi yang menunggu pembayaran yang dapat diubah.',
+            ], 409);
+        }
+
         $validated = $request->validate([
             'book_id' => 'sometimes|required|exists:books,id',
             'quantity' => 'sometimes|required|integer|min:1',
@@ -153,7 +179,10 @@ class TransactionController extends Controller
         }
 
         DB::transaction(function () use ($transaction) {
-            $transaction->book()->increment('stock', $transaction->quantity);
+            // Transaksi yang dibatalkan sudah mengembalikan stoknya saat dibatalkan
+            if ($transaction->payment_status !== 'cancelled') {
+                $transaction->book()->increment('stock', $transaction->quantity);
+            }
             $transaction->delete();
         });
 

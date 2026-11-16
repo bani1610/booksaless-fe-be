@@ -39,11 +39,12 @@ class AuthorController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'photo' => 'nullable|string',
+            'photo' => 'nullable|string|max:255',
+            'photo_file' => self::PHOTO_RULE,
             'bio' => 'nullable|string',
         ]);
 
-        $author = Author::create($validated);
+        $author = Author::create($this->withUploadedPhoto($request, $validated, 'photo', 'authors'));
 
         return response()->json([
             'success' => true,
@@ -89,11 +90,12 @@ class AuthorController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'photo' => 'nullable|string',
+            'photo' => 'nullable|string|max:255',
+            'photo_file' => self::PHOTO_RULE,
             'bio' => 'nullable|string',
         ]);
 
-        $author->update($validated);
+        $author->update($this->withUploadedPhoto($request, $validated, 'photo', 'authors'));
 
         return response()->json([
             'success' => true,

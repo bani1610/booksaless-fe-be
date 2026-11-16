@@ -2,6 +2,13 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { ROLES } from './auth/authService.js'
 import AdminLayout from './components/AdminLayout.jsx'
 import Account from './pages/Account.jsx'
+import Cart from './pages/Cart.jsx'
+import Orders from './pages/Orders.jsx'
+import BookForm from './pages/admin/BookForm.jsx'
+import BookList from './pages/admin/BookList.jsx'
+import TransactionList from './pages/admin/TransactionList.jsx'
+import UserForm from './pages/admin/UserForm.jsx'
+import UserList from './pages/admin/UserList.jsx'
 import Forbidden from './pages/Forbidden.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
@@ -18,6 +25,7 @@ import ProtectedRoute from './routes/ProtectedRoute.jsx'
 //   publik       -> /
 //   tamu saja    -> /login, /register
 //   semua login  -> /akun, /403
+//   customer     -> /keranjang, /pesanan
 //   admin saja   -> /admin/*
 function App() {
   return (
@@ -34,9 +42,21 @@ function App() {
         <Route path="/403" element={<Forbidden />} />
       </Route>
 
+      <Route element={<ProtectedRoute allowedRoles={[ROLES.USER]} />}>
+        <Route path="/keranjang" element={<Cart />} />
+        <Route path="/pesanan" element={<Orders />} />
+      </Route>
+
       <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
+          <Route path="books" element={<BookList />} />
+          <Route path="books/create" element={<BookForm />} />
+          <Route path="books/:id/edit" element={<BookForm />} />
+          <Route path="transactions" element={<TransactionList />} />
+          <Route path="users" element={<UserList />} />
+          <Route path="users/create" element={<UserForm />} />
+          <Route path="users/:id/edit" element={<UserForm />} />
           <Route path="genres" element={<GenreList />} />
           <Route path="genres/create" element={<GenreForm />} />
           <Route path="genres/:id/edit" element={<GenreForm />} />
