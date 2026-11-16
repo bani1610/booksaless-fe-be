@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 // DatabaseTransactions (bukan RefreshDatabase) agar data di database pengembangan tidak terhapus
@@ -14,11 +15,14 @@ class UserManagementTest extends TestCase
     use DatabaseTransactions;
 
     private User $admin;
+    // Password acak per test (bukan kredensial nyata), sekaligus menghindari temuan pemindai secret
+    private string $password;
     private string $token;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->password = Str::random(16);
         $this->admin = $this->makeUser(true);
         $this->token = auth('api')->login($this->admin);
     }
@@ -28,7 +32,7 @@ class UserManagementTest extends TestCase
         $suffix = substr(uniqid(), -8);
         return User::create([
             'name' => 'User ' . $suffix, 'username' => 'u' . $suffix, 'email' => "u{$suffix}@example.com",
-            'password' => 'password123', 'is_admin' => $isAdmin,
+            'password' => $this->password, 'is_admin' => $isAdmin,
         ]);
     }
 
@@ -40,14 +44,15 @@ class UserManagementTest extends TestCase
 
     public function test_admin_creates_user_with_hashed_password_and_hidden_in_response(): void
     {
+        $newPassword = Str::random(16);
         $res = $this->withToken($this->token)->postJson('/api/users', [
             'name' => 'Akun Baru', 'username' => 'akun.baru', 'email' => 'akun.baru@example.com',
-            'password' => 'rahasia123', 'is_admin' => true,
+            'password' => $newPassword, 'is_admin' => true,
         ])->assertStatus(201)->assertJsonMissingPath('data.password');
 
         $user = User::find($res->json('data.id'));
         $this->assertTrue($user->is_admin);
-        $this->assertTrue(Hash::check('rahasia123', $user->password));
+        $this->assertTrue(Hash::check($newPassword, $user->password));
     }
 
     public function test_update_with_empty_password_keeps_old_password(): void
@@ -58,7 +63,7 @@ class UserManagementTest extends TestCase
             'name' => 'Nama Baru', 'password' => '',
         ])->assertOk()->assertJsonPath('data.name', 'Nama Baru');
 
-        $this->assertTrue(Hash::check('password123', $user->fresh()->password));
+        $this->assertTrue(Hash::check($this->password, $user->fresh()->password));
     }
 
     public function test_admin_cannot_demote_or_delete_self(): void
@@ -85,7 +90,7 @@ class UserManagementTest extends TestCase
         $other = $this->makeUser();
 
         $this->withToken($this->token)->postJson('/api/users', [
-            'name' => 'Duplikat', 'username' => 'duplikat', 'email' => $other->email, 'password' => 'password123',
+            'name' => 'Duplikat', 'username' => 'duplikat', 'email' => $other->email, 'password' => $this->password,
         ])->assertStatus(422)->assertJsonValidationErrors(['email']);
     }
 }

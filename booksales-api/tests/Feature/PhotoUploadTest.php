@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 // DatabaseTransactions (bukan RefreshDatabase) agar data di database pengembangan tidak terhapus
@@ -24,7 +25,7 @@ class PhotoUploadTest extends TestCase
 
         $admin = User::create([
             'name' => 'Admin Uji', 'email' => 'admin-' . uniqid() . '@example.com',
-            'password' => 'password123', 'is_admin' => true,
+            'password' => Str::random(16), 'is_admin' => true,
         ]);
         $this->token = auth('api')->login($admin);
     }

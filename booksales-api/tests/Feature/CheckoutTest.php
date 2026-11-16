@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 // DatabaseTransactions (bukan RefreshDatabase) agar data di database pengembangan tidak terhapus
@@ -39,7 +40,7 @@ class CheckoutTest extends TestCase
 
         $customer = User::create([
             'name' => 'Customer Uji', 'email' => 'uji-' . uniqid() . '@example.com',
-            'password' => 'password123', 'is_admin' => false,
+            'password' => Str::random(16), 'is_admin' => false,
         ]);
         $this->token = auth('api')->login($customer);
     }
