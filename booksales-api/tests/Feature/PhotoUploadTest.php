@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Models\Author;
 use App\Models\Genre;
 use App\Models\User;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 // DatabaseTransactions (bukan RefreshDatabase) agar data di database pengembangan tidak terhapus
 class PhotoUploadTest extends TestCase
@@ -17,17 +19,18 @@ class PhotoUploadTest extends TestCase
     use DatabaseTransactions;
 
     private string $token;
+    private FilesystemAdapter $disk;
 
     protected function setUp(): void
     {
         parent::setUp();
-        Storage::fake('public');
+        $this->disk = Storage::fake('public');
 
         $admin = User::create([
             'name' => 'Admin Uji', 'email' => 'admin-' . uniqid() . '@example.com',
             'password' => Str::random(16), 'is_admin' => true,
         ]);
-        $this->token = auth('api')->login($admin);
+        $this->token = JWTAuth::fromUser($admin);
     }
 
     public function test_author_photo_is_optional(): void
@@ -48,7 +51,7 @@ class PhotoUploadTest extends TestCase
 
         $url = $res->json('data.photo');
         $this->assertStringStartsWith('http://localhost/storage/authors/', $url);
-        Storage::disk('public')->assertExists(str_replace('http://localhost/storage/', '', $url));
+        $this->disk->assertExists(str_replace('http://localhost/storage/', '', $url));
     }
 
     public function test_book_cover_upload_replaces_url_on_update_via_method_spoofing(): void

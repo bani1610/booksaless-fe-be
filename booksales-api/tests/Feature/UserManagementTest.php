@@ -2,12 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\Author;
+use App\Models\Book;
+use App\Models\Genre;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 // DatabaseTransactions (bukan RefreshDatabase) agar data di database pengembangan tidak terhapus
 class UserManagementTest extends TestCase
@@ -24,12 +28,13 @@ class UserManagementTest extends TestCase
         parent::setUp();
         $this->password = Str::random(16);
         $this->admin = $this->makeUser(true);
-        $this->token = auth('api')->login($this->admin);
+        $this->token = JWTAuth::fromUser($this->admin);
     }
 
     private function makeUser(bool $isAdmin = false): User
     {
-        $suffix = substr(uniqid(), -8);
+        // Acak, bukan uniqid(): dua akun yang dibuat dalam mikrodetik yang sama bisa mendapat nilai kembar
+        $suffix = Str::lower(Str::random(10));
         return User::create([
             'name' => 'User ' . $suffix, 'username' => 'u' . $suffix, 'email' => "u{$suffix}@example.com",
             'password' => $this->password, 'is_admin' => $isAdmin,
@@ -38,7 +43,7 @@ class UserManagementTest extends TestCase
 
     public function test_customer_cannot_access_user_management(): void
     {
-        $token = auth('api')->login($this->makeUser());
+        $token = JWTAuth::fromUser($this->makeUser());
         $this->withToken($token)->getJson('/api/users')->assertStatus(403);
     }
 
@@ -76,8 +81,14 @@ class UserManagementTest extends TestCase
     public function test_user_with_transactions_cannot_be_deleted(): void
     {
         $user = $this->makeUser();
+        // Buku dibuat sendiri agar test tidak bergantung pada isi database
+        $book = Book::create([
+            'title' => 'Buku Uji', 'price' => 1000, 'stock' => 1,
+            'genre_id' => Genre::create(['name' => 'Uji', 'description' => 'Genre uji'])->id,
+            'author_id' => Author::create(['name' => 'Penulis Uji', 'bio' => 'Bio'])->id,
+        ]);
         Transaction::create([
-            'order_number' => 'ORD-' . uniqid(), 'customer_id' => $user->id, 'book_id' => \App\Models\Book::query()->value('id'),
+            'order_number' => 'ORD-' . Str::upper(Str::random(8)), 'customer_id' => $user->id, 'book_id' => $book->id,
             'quantity' => 1, 'total_amount' => 1000, 'payment_status' => 'paid',
         ]);
 
